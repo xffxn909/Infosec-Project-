@@ -1,0 +1,79 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║          PRIVATE KEY MANAGEMENT POLICY  v1.0                 ║
+╚══════════════════════════════════════════════════════════════╝
+
+1. PURPOSE
+   Ensure private keys used by the Secure Document System are
+   generated, stored, used, and destroyed securely.
+
+2. SCOPE
+   Root CA key, Intermediate CA key, all user signing keys.
+
+3. KEY GENERATION
+   • All keys generated using cryptography library (≥41.0).
+   • Root CA: RSA-4096. Intermediate CA: RSA-2048. Users: EC P-256.
+   • Generated on an air-gapped machine where possible.
+
+4. KEY STORAGE
+   • Root CA key MUST be stored offline (encrypted USB + safe).
+   • Intermediate CA key: encrypted at rest (AES-256-GCM).
+   • User signing keys: PKCS8 PEM, passphrase-protected.
+   • No keys stored in version control or plain-text config files.
+
+5. KEY ACCESS
+   • Root CA key: accessed only for Intermediate CA signing (rare).
+   • Access logged in audit_log table with actor, timestamp, purpose.
+   • Minimum two-person rule for Root CA operations.
+
+6. KEY ROTATION
+   • User signing keys: rotated every 90 days.
+   • Intermediate CA: rotated every 2 years.
+   • Old keys archived (not deleted) for 1 year for verification.
+
+7. KEY REVOCATION
+   • Compromised or expired keys revoked via CRL / OCSP within 24 h.
+   • Revocation event logged and affected users notified.
+
+8. ENFORCEMENT
+   Violations reported to the system administrator. Accounts suspended
+   pending investigation.
+
+
+
+╔══════════════════════════════════════════════════════════════╗
+║          BACKUP AND RECOVERY POLICY  v1.0                    ║
+╚══════════════════════════════════════════════════════════════╝
+
+1. PURPOSE
+   Ensure data can be restored within SLA after any failure.
+
+2. SCOPE
+   SQLite database, uploaded documents, PKI files.
+
+3. BACKUP SCHEDULE
+   • Full backup: daily at 02:00 (automated via backup_service.py).
+   • Backup stored locally in /backups/ AND on a separate NAS/USB.
+   • Retention: 30 daily, 12 monthly, 3 yearly copies.
+
+4. BACKUP INTEGRITY
+   • Each archive is SHA-256 hashed and hash stored separately.
+   • Integrity verified before restore.
+
+5. RESTORE PROCEDURE
+   a. Identify latest clean backup.
+   b. Run: python backup_service.py --restore <archive>
+   c. Verify restored data against hash.
+   d. Resume service; notify users.
+
+6. SLA TARGETS
+   • Maximum downtime during working hours: 2 hours.
+   • Maximum restore time: 1 hour (tested quarterly).
+
+7. TESTING
+   • Monthly timed restore drill; results recorded in audit log.
+   • Any restore exceeding SLA triggers an incident report.
+
+8. OFFSITE COPIES
+   • At least one backup copy kept offsite or in encrypted cloud.
+   • Encryption key managed per Private Key Management Policy.

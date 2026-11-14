@@ -1,0 +1,77 @@
+======================================================================
+   INFORMATION SECURITY RISK ASSESSMENT REPORT
+   Secure Document Management and E-Signature System
+   Generated: 2026-11-14T19:29:38.497370
+   Framework: NIST SP 800-30
+======================================================================
+
+── ASSET REGISTER ──────────────────────────────────────────────────
+  A1    Web Application Server                   [Server     ]  Value: High
+  A2    Document Database (SQLite)               [Data       ]  Value: High
+  A3    Uploaded Documents                       [Data       ]  Value: Critical
+  A4    Root CA Private Key                      [Key        ]  Value: Critical
+  A5    Intermediate CA Key                      [Key        ]  Value: High
+  A6    User Signing Keys                        [Key        ]  Value: High
+  A7    Staff Accounts                           [Account    ]  Value: Medium
+  A8    TLS Certificates                         [Certificate]  Value: High
+  A9    Backup Archives                          [Data       ]  Value: High
+  A10   Office Network                           [Network    ]  Value: Medium
+  A11   System Administrators                    [People     ]  Value: High
+
+── THREAT & VULNERABILITY MATRIX ───────────────────────────────────
+  T1  Private Key Theft
+       Vuln : Keys stored unencrypted on disk; no HSM
+       Vector: Insider threat / malware
+  T2  Expired / Revoked Certificate Not Checked
+       Vuln : CRL not checked on every connection; OCSP not deployed
+       Vector: Man-in-the-middle with expired cert
+  T3  Weak Password / Brute Force
+       Vuln : Staff choose weak passwords; no lockout policy
+       Vector: Online brute force / credential stuffing
+  T4  Document Tampering
+       Vuln : No integrity check on documents at rest
+       Vector: Insider modifies file directly on disk
+  T5  Denial of Service (DoS)
+       Vuln : No rate limiting; no firewall rules
+       Vector: HTTP flood / SYN flood from office network
+  T6  Data Loss (Ransomware / Disk Failure)
+       Vuln : No offsite backup; backups stored on same server
+       Vector: Ransomware encrypts server disk
+  T7  Fake / Forged Certificate
+       Vuln : No certificate pinning; Root CA not strictly protected
+       Vector: Attacker creates rogue cert from compromised CA
+  T8  Weak Hash Algorithm (MD5)
+       Vuln : Password stored with MD5 (legacy path)
+       Vector: Rainbow-table / GPU cracking attack
+
+── RISK REGISTER ────────────────────────────────────────────────────
+  ID   Threat L×I Before  Rating   L×I After  Rating
+  ------------------------------------------------------------
+  R1   T1       15  HIGH          5  LOW
+       Control: Keys encrypted at rest; root key kept offline; rotation policy
+  R2   T2       16  HIGH          8  MEDIUM
+       Control: CRL checked on every signature verification; OCSP stub added
+  R3   T3       12  HIGH          3  LOW
+       Control: Argon2 hashing; MFA (TOTP); 5-attempt rate limit per 5 min
+  R4   T4       15  HIGH          5  LOW
+       Control: SHA-256 on upload; ECDSA signing; audit log of all file accesses
+  R5   T5       12  HIGH          8  MEDIUM
+       Control: In-app rate limiter; Windows firewall rules; Flask connection limits
+  R6   T6       10  MEDIUM        5  LOW
+       Control: Daily automated backup; timed restore test; backup integrity check
+  R7   T7       10  MEDIUM        5  LOW
+       Control: Root CA strictly protected; certificate chain validation enforced
+  R8   T8       16  HIGH          4  LOW
+       Control: Argon2 replaces MD5; migration script hashes legacy passwords
+
+── RISK TREATMENT PLAN ──────────────────────────────────────────────
+  Risk  Treatment  Priority Cost    Owner    Phase
+  -------------------------------------------------------
+  R1    Mitigate          1 Low     admin    Phase 1
+  R4    Mitigate          1 Low     admin    Phase 1
+  R7    Mitigate          2 Low     admin    Phase 1
+  R3    Mitigate          2 Low     dev      Phase 1
+  R2    Mitigate          3 Medium  admin    Phase 2
+  R5    Mitigate          3 Medium  admin    Phase 2
+  R6    Mitigate          4 Medium  admin    Phase 1
+  R8    Mitigate          5 Low     dev      Phase 1
