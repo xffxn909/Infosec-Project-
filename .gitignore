@@ -1,0 +1,165 @@
+# ============================================================
+# Secure Document Management & E-Signature System — .gitignore
+# ============================================================
+
+# ---------------------------
+# Python
+# ---------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ---------------------------
+# Environment / Secrets
+# ---------------------------
+.env
+.env.local
+.env.*.local
+.env.production
+*.secret
+
+# ---------------------------
+# Node / Frontend
+# ---------------------------
+node_modules/
+dist/
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+.node_repl_history
+*.tgz
+.yarn-integrity
+.cache/
+.parcel-cache/
+.vite/
+
+# ---------------------------
+# Security — Private Keys & Sensitive Material
+# ---------------------------
+# Never commit private keys
+*.key
+*_key.pem
+*private*key*.pem
+*.p12
+*.pfx
+*.jks
+
+# PKI private directories — NEVER commit private CA keys
+pki/root-ca/private/
+pki/intermediate-ca/private/
+pki/**/private/
+
+# Backend key/upload storage
+backend/keys/*
+!backend/keys/.gitkeep
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Sensitive CA state files
+pki/root-ca/index.*
+pki/root-ca/serial*
+pki/root-ca/crlnumber*
+pki/intermediate-ca/index.*
+pki/intermediate-ca/serial*
+pki/intermediate-ca/crlnumber*
+
+# ---------------------------
+# Logs
+# ---------------------------
+*.log
+logs/
+log/
+
+# ---------------------------
+# Database
+# ---------------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# ---------------------------
+# OS Artifacts
+# ---------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ---------------------------
+# IDE / Editor
+# ---------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# ---------------------------
+# Docker
+# ---------------------------
+docker-compose.override.yml
+
+# ---------------------------
+# Testing
+# ---------------------------
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+pytest_cache/
+
+# ---------------------------
+# Backup files
+# ---------------------------
+backups/
+*.bak
+*.backup
+*.dump
+
+# ---------------------------
+# Misc
+# ---------------------------
+*.tmp
+*.temp
+.mypy_cache/
+.ruff_cache/

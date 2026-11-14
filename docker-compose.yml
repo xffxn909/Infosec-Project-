@@ -1,0 +1,113 @@
+version: "3.9"
+
+# ============================================================
+# Secure Document Management & E-Signature System
+# Docker Compose — Local Development & Staging
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # PostgreSQL Database
+  # ----------------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: securedocs_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: securedocs
+      POSTGRES_USER: ${POSTGRES_USER:-securedocs}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-securedocs} -d securedocs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend_net
+
+  # ----------------------------------------------------------
+  # Flask Backend API
+  # ----------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: securedocs_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-securedocs}:${POSTGRES_PASSWORD:-changeme}@db:5432/securedocs
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/keys:/app/keys
+      - ./pki:/app/pki:ro
+    expose:
+      - "5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - backend_net
+      - frontend_net
+
+  # ----------------------------------------------------------
+  # React Frontend (nginx serving static SPA)
+  # ----------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: securedocs_frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+    networks:
+      - frontend_net
+
+  # ----------------------------------------------------------
+  # nginx Reverse Proxy (TLS termination + routing)
+  # ----------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: securedocs_nginx
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:ro
+      - ./pki/certs:/etc/nginx/certs:ro
+    networks:
+      - frontend_net
+
+# ----------------------------------------------------------
+# Named Volumes
+# ----------------------------------------------------------
+volumes:
+  postgres_data:
+    driver: local
+
+# ----------------------------------------------------------
+# Networks
+# ----------------------------------------------------------
+networks:
+  backend_net:
+    driver: bridge
+  frontend_net:
+    driver: bridge
