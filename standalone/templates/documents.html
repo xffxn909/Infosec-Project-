@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Documents</h1>
+<div class="card" style="margin-bottom:16px">
+  <h2>Upload New Document</h2>
+  <form method="post" action="{{ url_for('upload_doc') }}" enctype="multipart/form-data">
+    <label>Select File</label>
+    <input type="file" name="file" required>
+    <button class="btn btn-success" style="margin-top:12px">Upload &amp; Hash</button>
+  </form>
+</div>
+<div class="card">
+  <table>
+    <tr><th>Filename</th><th>SHA-256 (first 16)</th><th>Uploader</th><th>Signed by</th><th>Date</th><th>Actions</th></tr>
+    {% for d in docs %}
+    <tr>
+      <td>{{ d.filename }}</td>
+      <td><code>{{ d.sha256[:16] }}…</code></td>
+      <td>{{ d.uploader }}</td>
+      <td>{% if d.signed_by %}<span class="badge badge-green">{{ d.signed_by }}</span>{% else %}—{% endif %}</td>
+      <td>{{ d.created_at }}</td>
+      <td>
+        {% if not d.signed_by %}
+        <a href="{{ url_for('sign_doc', stored_name=d.stored_name) }}" class="btn btn-sm btn-warning">Sign</a>
+        {% endif %}
+        <a href="{{ url_for('verify_doc', stored_name=d.stored_name) }}" class="btn btn-sm btn-primary">Verify</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

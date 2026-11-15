@@ -14,7 +14,8 @@ import json
 import datetime
 from pathlib import Path
 
-REPORT_DIR = Path("risk_reports")
+BASE_DIR = Path(__file__).resolve().parent
+REPORT_DIR = BASE_DIR / "risk_reports"
 REPORT_DIR.mkdir(exist_ok=True)
 
 # ─────────────────────────────────────────────────────────────────────────────

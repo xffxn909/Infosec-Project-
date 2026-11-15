@@ -10,7 +10,12 @@ Module 1 – Document Upload, Signing & Verification
 
 import uuid
 import shutil
+import sys
 from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 
 from pki_manager import (
     sha256_file, sign_document, verify_document,
@@ -21,8 +26,8 @@ from database import (
     mark_signed, audit, is_cert_revoked,
 )
 
-UPLOAD_DIR = Path("uploads")
-PKI_DIR = Path("pki")
+UPLOAD_DIR = BASE_DIR / "uploads"
+PKI_DIR = BASE_DIR / "pki"
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 

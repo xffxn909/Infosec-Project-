@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Audit Log</h1>
+<div class="card">
+  <table>
+    <tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th><th>IP</th><th>Detail</th></tr>
+    {% for log in logs %}
+    <tr>
+      <td style="white-space:nowrap">{{ log.timestamp }}</td>
+      <td>{{ log.actor }}</td>
+      <td><code>{{ log.action }}</code></td>
+      <td>{{ log.target or '—' }}</td>
+      <td>{{ log.ip_address or '—' }}</td>
+      <td style="font-size:.75rem;max-width:300px">{{ log.detail or '' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

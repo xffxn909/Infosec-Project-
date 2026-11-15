@@ -2,48 +2,49 @@
 
 > **InfoSec Semester Project** — FAST-NUCES  
 > **Course:** Information Security  
-> **Branch:** `mohsin` (team member branches merge to `main` via PR)
+> **Repository:** `https://github.com/xffxn909/Infosec-Project-`  
+> **Branch:** `sibgatullah`
 
 ---
 
-## Overview
+## 👥 Team Members & Contributions
 
-The **Secure Document Management & E-Signature System** is a web-based platform that enables organisations to upload, manage, digitally sign, and verify sensitive documents with strong cryptographic guarantees. The system is designed around the **CIA Triad**:
+| Name | CMS ID | Primary Role |
+|---|---|---|
+| **Syed Muhammad Ali Hassan** | 549075 | PKI & Standalone Application Prototype |
+| **Mohsin Zia** | 561256 | Enterprise Architecture, Backend API & DevOps |
+| **Affan Tariq** | 551279 | Frontend Integration, Unification & Bugfixes |
+| **Mian Muhammad Sibghatullah Saeed** | 542378 | Integration Lead, Docker & Architecture Standardization |
+
+---
+
+## 📋 Overview
+
+The **Secure Document Management & E-Signature System** is an enterprise-grade platform that enables organisations to securely upload, store, digitally sign, and verify sensitive documents with strong cryptographic guarantees. The platform strictly implements controls according to the **CIA Triad** and **NIST SP 800-30 Rev. 1 Risk Assessment Framework**.
 
 | Property | Implementation |
 |---|---|
-| **Confidentiality** | Argon2id password hashing, JWT authentication, role-based access control (RBAC), TLS in transit, files stored with hashed filenames |
-| **Integrity** | SHA-256 document fingerprinting on upload and re-verified on every download; RSA digital signatures stored and verifiable at any time |
-| **Availability** | Dockerised services with health checks, automated daily backups, `ON_FAILURE` restart policy, Railway cloud deployment with RTO of 1 hour |
+| **Confidentiality** | **Argon2id** password hashing (memory-hard, resistant to GPU/ASIC attacks), **JWT** authentication, **TOTP MFA** (RFC 6238 / Google Authenticator), Role-Based Access Control (**RBAC**: Admin, Manager, Staff), and TLS 1.2/1.3 reverse proxy termination. |
+| **Integrity** | **SHA-256** cryptographic fingerprinting on upload and download, **RSA-2048 / ECDSA** digital signatures with verification reports, and an immutable, structured **AuditLog** recording every system mutation. |
+| **Availability** | Automated daily backup archives, timed restore testing demonstrating Recovery Time Objective (**RTO < 1 hour**), and Nginx rate-limiting zones (5 req/min on login, 60 req/min general API) for DoS and brute-force mitigation. |
 
 ---
 
-## Team
-
-| Name | CMS ID | Role |
-|---|---|---|
-| Syed Muhammad Ali Hassan | 549075 | Backend / PKI Lead |
-| Mohsin Zia | 561256 | DevOps / Security Architecture |
-| Affan Tariq | 551279 | Frontend / API Integration |
-| Mian Muhammad Sibghatullah Saeed | 542378 | Database / Risk Assessment |
-
----
-
-## Architecture
+## 🏗️ Architecture
 
 ```
                      ┌───────────────────────────────┐
                      │          Client Browser        │
                      └───────────────┬───────────────┘
-                                     │ HTTPS (443)
+                                     │ HTTPS (Port 443 / Port 80)
                      ┌───────────────▼───────────────┐
-                     │      nginx Reverse Proxy        │
-                     │   TLS termination · rate limit  │
+                     │      Nginx Reverse Proxy       │
+                     │  TLS termination · Rate limit  │
                      └────────┬──────────┬────────────┘
                               │          │
                ┌──────────────▼──┐  ┌───▼──────────────┐
                │  React Frontend │  │  Flask REST API   │
-               │  (Vite / nginx) │  │  /api/*           │
+               │  (Vite / Nginx) │  │  /api/*           │
                └─────────────────┘  └───────┬───────────┘
                                             │
                               ┌─────────────▼──────────┐
@@ -52,242 +53,149 @@ The **Secure Document Management & E-Signature System** is a web-based platform 
                               │   Signatures, AuditLog)│
                               └────────────────────────┘
 
-PKI Infrastructure (out-of-band)
-  pki/root-ca/           ← Root CA (offline)
-  pki/intermediate-ca/   ← Intermediate CA (online, server-side)
-  backend/keys/          ← Per-user RSA signing keys (600 perms)
+PKI Hierarchy (pki/):
+  Root CA (4096-bit RSA) ──► Intermediate CA (4096-bit RSA) ──► Server & User Signing Certs + CRL
 ```
 
 ---
 
-## Tech Stack
+## 🚀 Execution & Deployment Options
 
-| Layer | Technology | Notes |
-|---|---|---|
-| **Backend** | Python 3.11 / Flask | REST API with blueprints |
-| **Frontend** | React 18 / Vite | SPA, Axios for API calls |
-| **Database** | PostgreSQL 15 | SQLAlchemy ORM + Flask-Migrate |
-| **PKI** | OpenSSL 3.x | Root CA → Intermediate CA → User Certs |
-| **Cryptography** | RSA-2048 / SHA-256 / Argon2id | Via Python `cryptography` library |
-| **MFA** | TOTP (RFC 6238) | `pyotp` + QR code enrolment |
-| **Auth** | JWT (Bearer token) | `flask-jwt-extended` |
-| **Containerisation** | Docker + Docker Compose | Multi-stage builds |
-| **Deployment** | Railway + Docker | `railway.toml` configured |
+The project provides two fully functional execution modes to satisfy both production deployment standards and quick local grading:
 
----
-
-## Security Features
-
-### Confidentiality Controls
-- **Argon2id** password hashing (memory-hard, resistant to GPU attacks)
-- **JWT** access tokens with short expiry (15 min), refresh token rotation
-- **TOTP-based MFA** with QR code enrolment flow
-- **RBAC** — three roles: `admin`, `manager`, `staff` enforced at every endpoint
-- Files stored with **SHA-256 derived filenames** (original name never exposed in storage path)
-- **TLS 1.2+** enforced at nginx layer; HTTP redirected to HTTPS
-
-### Integrity Controls
-- **SHA-256 hash** computed at upload time, stored in DB, re-verified on every download
-- **RSA-2048 digital signatures** per document per signer
-- Signature verification endpoint returns detailed result (hash match + crypto validity)
-- **AuditLog** table records every mutating action with IP, timestamp, user, and details (JSON)
-- Database foreign key constraints prevent orphaned signatures
-
-### Availability Controls
-- Docker **health checks** on all services; `restart: unless-stopped`
-- Railway `restartPolicyType = "ON_FAILURE"` for cloud resilience
-- **Daily automated backups** at 02:00 (`backup.sh` + cron) — 7-day rolling retention
-- **RTO: 1 hour** / **RPO: 24 hours** (documented in `risk_assessment/policies/backup_recovery_policy.md`)
-- PostgreSQL named volume for data persistence across container restarts
-
-### Additional Security Measures
-- Non-root Docker user (`appuser`) in backend image
-- Private keys stored with **mode 600** (`backend/keys/`, `pki/*/private/`)
-- Root CA key kept **offline** (USB + locked cabinet)
-- CRL-based revocation via `scripts/revoke_cert.sh`
-- All key operations logged in AuditLog table
-
----
-
-## Getting Started (Local Development)
-
-### Prerequisites
-- Docker ≥ 24 and Docker Compose ≥ 2.x
-- Git
-- OpenSSL 3.x (for PKI setup)
-
-### Steps
+### Option 1: Full Enterprise Stack (Docker Compose — Recommended)
+Run the complete multi-container architecture (PostgreSQL, Flask REST API, React 18 SPA, and Nginx Reverse Proxy with TLS and rate limiting):
 
 ```bash
-# 1. Clone the repository
-git clone <repo-url>
-cd InfosecProject
+# 1. Clone repository and navigate to root
+git clone https://github.com/xffxn909/Infosec-Project-.git
+cd Infosec-Project-
 
-# 2. Checkout your working branch (or main)
-git checkout mohsin   # or main / your branch
+# 2. Copy environment file template
+cp .env.example .env
 
-# 3. Create your local environment file
-cp backend/.env.example .env
-# Edit .env — set POSTGRES_PASSWORD, JWT_SECRET_KEY, SECRET_KEY to strong random values
+# 3. Setup PKI certificates (generates Root CA, Intermediate CA, Server Certs)
+bash pki/setup_ca.sh
 
-# 4. Build and start all services
-docker-compose up --build -d
+# 4. Start all containers
+docker compose up --build -d
 
-# 5. Wait for the backend health check to pass, then run DB migrations
-docker-compose exec backend flask db upgrade
-
-# 6. Run PKI setup (creates Root CA, Intermediate CA)
-bash pki/setup_pki.sh
-
-# 7. Access the application
-#    Frontend:  http://localhost
-#    API docs:  http://localhost/api/health
-#    Direct FE: http://localhost:3000  (dev port)
+# 5. Access the applications:
+#    - Frontend SPA: http://localhost:3000 (or https://localhost via Nginx)
+#    - API Health:   http://localhost:5000/api/health
 ```
 
-> **First-time login:** The first `POST /api/auth/register` request creates an admin account.
+### Option 2: Lightweight Standalone Prototype (Single Python Process)
+Run the self-contained, single-machine version with SQLite and structured Jinja2 templates (no Docker or PostgreSQL required):
 
----
-
-## Zero-Cost Deployment Options (University / Lab)
-
-### Option 1: Docker Compose (100% Free - Recommended for Evaluation)
-No cloud services or credit cards required. Evaluators or team members can run the full environment locally or on any lab machine:
 ```bash
-docker compose up --build
+# 1. Navigate to standalone directory
+cd standalone
+
+# 2. Install lightweight dependencies
+pip install -r requirements.txt
+
+# 3. Run PKI test, risk assessment, and backup drills
+python pki_manager.py
+python risk_assessment.py
+python backup_service.py
+
+# 4. Start the standalone web server
+python app.py
 ```
-- Frontend UI: `http://localhost:3000` (or `https://localhost` via Nginx)
-- Backend REST API: `http://localhost:5000/api/`
-
-### Option 2: Render.com (100% Free Cloud Tier - No Credit Card)
-A `render.yaml` Blueprint is included for zero-cost cloud deployment:
-1. Push to your GitHub repo.
-2. Sign in to [Render.com](https://render.com) (free account).
-3. Go to **Blueprints** → **New Blueprint Instance** → Select repository.
-4. Render provisions the PostgreSQL database, Flask backend web service, and React static site automatically at zero cost.
-
-### Option 3: Railway (Optional)
-A `railway.toml` configuration is also provided if deploying to a Railway account.
+Open **http://127.0.0.1:5000** in your browser.  
+Default Admin Credentials: `admin` / `Admin@1234`.
 
 ---
 
-See [`pki/README.md`](pki/README.md) for full PKI documentation including:
-- Creating the Root CA and Intermediate CA
-- Issuing user signing certificates
-- Revoking certificates and updating the CRL
-- Key storage requirements
+## 🧪 Security & Verification Scripts
+
+In addition to the web applications, standalone verification scripts are provided under `scripts/`:
+
+```bash
+# 1. SHA-256 Tamper Detection Demo
+python scripts/hash_verify.py --demo README.md
+
+# 2. Password Hash Cracking Demo (MD5 dictionary crack vs Argon2id resilience)
+python scripts/cracking_demo.py
+
+# 3. Automated Backup & Restore Drill
+bash scripts/backup.sh --test-restore
+```
 
 ---
 
-## Project Structure
+## 📂 Repository Structure
 
 ```
-InfosecProject/
-├── .gitignore                      # Excludes private keys, .env, node_modules, etc.
-├── Dockerfile                      # Backend multi-stage Docker image
-├── docker-compose.yml              # Full stack: db + backend + frontend + nginx
-├── railway.toml                    # Railway cloud deployment config
-├── README.md                       # This file
+Infosec-Project-/
+├── .gitignore                      # Excludes private keys, databases, WAL, and pycache
+├── .env.example                    # Environment template for Docker Compose
+├── Dockerfile                      # Multi-stage Dockerfile for Flask Backend
+├── docker-compose.yml              # Multi-container orchestration (db, backend, frontend, nginx)
+├── render.yaml                     # Render.com zero-cost cloud deployment blueprint
+├── railway.toml                    # Railway deployment configuration
+├── README.md                       # Main documentation
 │
-├── backend/
-│   ├── requirements.txt            # Python dependencies
-│   ├── .env.example                # Environment variable template
-│   ├── run.py                      # Flask app entry point
-│   └── app/
-│       ├── __init__.py             # App factory
-│       ├── config.py               # Config from environment
-│       ├── models.py               # SQLAlchemy models
-│       ├── auth/                   # Auth blueprint (register, login, MFA)
-│       ├── documents/              # Documents blueprint (upload, sign, verify)
-│       ├── audit/                  # Audit log blueprint
-│       └── admin/                  # Admin blueprint (user management)
+├── backend/                        # Enterprise REST API (Flask application factory)
+│   ├── app/
+│   │   ├── __init__.py             # Factory pattern & blueprint registration
+│   │   ├── config.py               # Environment configuration
+│   │   ├── models.py               # SQLAlchemy ORM models (User, Document, Signature, AuditLog)
+│   │   ├── utils.py                # Helpers (circular-import-safe key generator & logger)
+│   │   ├── auth/                   # Authentication blueprint (Argon2, JWT, TOTP MFA)
+│   │   ├── documents/              # Document management & crypto blueprint
+│   │   ├── audit/                  # Audit trail logging blueprint
+│   │   └── admin/                  # Administrative operations blueprint
+│   ├── requirements.txt            # Backend dependencies
+│   └── run.py                      # Application entry point
 │
-├── frontend/
-│   ├── Dockerfile                  # Frontend multi-stage Docker image
+├── frontend/                       # Modern React 18 SPA (Vite + Tailwind CSS)
+│   ├── Dockerfile                  # Multi-stage build (Node -> Nginx)
 │   ├── package.json
-│   └── src/                        # React + Vite source (do not modify here)
+│   └── src/                        # React components, contexts, pages, and API clients
 │
-├── nginx/
-│   ├── nginx.conf                  # Main nginx reverse proxy config
-│   └── frontend.conf               # Frontend SPA + API proxy config
+├── nginx/                          # Nginx reverse proxy configuration
+│   ├── nginx.conf                  # Main config with rate-limiting zones
+│   ├── frontend.conf               # SPA serving configuration for frontend container
+│   └── securedocs.conf             # TLS termination, security headers, and API proxy
 │
-├── pki/
-│   ├── README.md                   # PKI documentation
-│   ├── root-ca/                    # Root Certificate Authority
-│   │   ├── private/                # 🔒 NEVER committed (in .gitignore)
-│   │   └── certs/
-│   ├── intermediate-ca/            # Intermediate CA
-│   │   ├── private/                # 🔒 NEVER committed (in .gitignore)
-│   │   └── certs/
-│   └── certs/                      # Issued public certificates
+├── pki/                            # OpenSSL PKI Infrastructure
+│   ├── setup_ca.sh                 # Generates Root CA, Intermediate CA, and Server Certs
+│   ├── issue_user_cert.sh          # Issues user signing certificates
+│   ├── revoke_cert.sh              # Revokes certificates and updates CRL
+│   ├── certs/                      # Public certificates & chains
+│   └── crl/                        # Certificate Revocation Lists
 │
-├── scripts/
-│   ├── setup_pki.sh                # PKI bootstrapping script
-│   ├── backup.sh                   # Backup and restore script
-│   └── revoke_cert.sh              # Certificate revocation script
+├── scripts/                        # Demonstration & testing scripts
+│   ├── backup.sh                   # Daily backup & restore SLA verification
+│   ├── cracking_demo.py            # MD5 vs Argon2 cracking benchmark
+│   └── hash_verify.py              # SHA-256 fingerprinting & tamper detection
 │
-└── risk_assessment/
-    ├── README.md                   # Risk assessment overview (NIST SP 800-30)
-    ├── risk_register.md            # Identified threats and risk ratings
-    ├── threat_model.md             # STRIDE threat model
-    └── policies/
-        ├── private_key_management_policy.md
-        └── backup_recovery_policy.md
+├── standalone/                     # Lightweight Single-Process Prototype
+│   ├── app.py                      # Clean Flask server with Jinja2 rendering
+│   ├── auth.py                     # Authentication & TOTP MFA
+│   ├── database.py                 # SQLite data layer
+│   ├── document_service.py         # Upload & digital signing service
+│   ├── backup_service.py           # Backup & restore drills
+│   ├── pki_manager.py              # Pure Python PKI & cryptography
+│   ├── risk_assessment.py          # NIST SP 800-30 calculations & report generator
+│   ├── create_user.py              # CLI user creation tool
+│   ├── templates/                  # Modular Jinja2 HTML templates
+│   └── README.md                   # Standalone guide
+│
+└── risk_assessment/                # NIST SP 800-30 Rev. 1 Risk Documentation
+    ├── asset_register.md           # CIA-valued asset inventory
+    ├── threat_vulnerability_matrix.md # Threat vectors & vulnerability mappings
+    ├── risk_register.md            # Pre- and post-control risk scores & 5x5 heatmap
+    ├── risk_treatment_plan.md      # Treatment prioritization & deadlines
+    └── policies/                   # Security governance policies
 ```
 
 ---
 
-## Git Workflow
+## 🔒 Security Compliance Summary
 
-Each team member works on a dedicated branch and submits a Pull Request to `main` for review.
-
-| Branch | Owner | Scope |
-|---|---|---|
-| `main` | All (via PR) | Production-ready, reviewed code only |
-| `mohsin` | Mohsin Zia | DevOps, Docker, deployment, project docs |
-| `ali` | Syed Muhammad Ali Hassan | Backend API, PKI scripts |
-| `affan` | Affan Tariq | Frontend React components |
-| `sibghat` | Mian Muhammad Sibghatullah Saeed | Database schema, risk assessment |
-
-**Branch Rules:**
-1. Never push directly to `main`
-2. PRs require at least one team member review
-3. All CI checks (lint, tests) must pass before merge
-4. Squash-merge to keep `main` history clean
-
----
-
-## Module 1 Deliverables
-
-- [x] Project proposal submitted
-- [x] Repository created with branch strategy
-- [x] CIA triad analysis documented
-- [x] Initial system architecture diagram
-- [x] Technology stack finalised
-- [x] NIST SP 800-30 risk assessment started (`risk_assessment/`)
-- [x] STRIDE threat model drafted
-
----
-
-## Module 2 Deliverables
-
-- [x] PKI infrastructure (Root CA + Intermediate CA) set up
-- [x] Flask backend API — all endpoints implemented
-- [x] JWT authentication + TOTP MFA
-- [x] RBAC enforcement (`admin`, `manager`, `staff`)
-- [x] SHA-256 document hashing on upload and download
-- [x] RSA-2048 digital signature + verification
-- [x] Audit log (all actions recorded with IP, timestamp, user)
-- [x] React frontend — login, MFA setup, document management UI
-- [x] Docker Compose full-stack deployment
-- [x] Railway deployment configured (`railway.toml`)
-- [x] Private Key Management Policy written
-- [x] Backup & Recovery Policy written (RTO 1h / RPO 24h)
-- [ ] Penetration testing report
-- [ ] Final presentation
-
----
-
-## License
-
-This project is developed for academic purposes as part of the Information Security course at FAST-NUCES. All rights reserved by the team members.
+- **NIST SP 800-30 Rev. 1:** Comprehensive risk analysis covering all assets, threats, and mitigations.
+- **Zero Committed Secrets:** No private keys (`.key`), SQLite databases (`.db`), or credentials are tracked in version control.
+- **Defence-in-Depth:** Rate limiting at proxy layer, role-based checks at API layer, cryptographic integrity checks at storage layer.

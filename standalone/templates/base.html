@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SecureDoc – {{ title }}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f0f4f8; color: #222; }
+  nav { background: #1a1a2e; color: #fff; padding: 12px 24px; display: flex; align-items: center; gap: 16px; }
+  nav a { color: #a0c4ff; text-decoration: none; font-size: .9rem; }
+  nav a:hover { color: #fff; }
+  nav .brand { font-weight: 700; font-size: 1.1rem; color: #fff; margin-right: auto; }
+  .container { max-width: 1000px; margin: 32px auto; padding: 0 16px; }
+  h1 { font-size: 1.5rem; margin-bottom: 16px; color: #1a1a2e; }
+  h2 { font-size: 1.1rem; margin: 24px 0 8px; color: #333; }
+  .card { background: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.1); margin-bottom: 20px; }
+  .btn { display: inline-block; padding: 8px 18px; border-radius: 5px; border: none; cursor: pointer; font-size: .9rem; text-decoration: none; }
+  .btn-primary { background: #1a1a2e; color: #fff; }
+  .btn-success { background: #2d7a4f; color: #fff; }
+  .btn-danger { background: #b91c1c; color: #fff; }
+  .btn-warning { background: #b45309; color: #fff; }
+  .btn-sm { padding: 4px 10px; font-size: .8rem; }
+  .alert { padding: 10px 16px; border-radius: 5px; margin-bottom: 12px; font-size: .9rem; }
+  .alert-danger { background: #fee2e2; color: #991b1b; }
+  .alert-success { background: #dcfce7; color: #166534; }
+  .alert-warning { background: #fef3c7; color: #92400e; }
+  .alert-info { background: #dbeafe; color: #1e40af; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+  th { background: #f8fafc; font-weight: 600; }
+  tr:hover { background: #f1f5f9; }
+  form label { display: block; font-size: .85rem; font-weight: 600; margin: 12px 0 4px; }
+  form input, form select { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: .9rem; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: .75rem; font-weight: 600; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-yellow { background: #fef3c7; color: #92400e; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 6px; overflow: auto; font-size: .8rem; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<nav>
+  <span class="brand">🔒 SecureDoc</span>
+  {% if user %}
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('documents_page') }}">Documents</a>
+    <a href="{{ url_for('audit_page') }}">Audit Log</a>
+    {% if user.role == 'admin' %}
+      <a href="{{ url_for('admin_page') }}">Admin</a>
+      <a href="{{ url_for('risk_page') }}">Risk Report</a>
+      <a href="{{ url_for('backup_page') }}">Backups</a>
+    {% endif %}
+    <a href="{{ url_for('logout') }}" style="margin-left:auto;color:#fca5a5">Logout ({{ user.username }})</a>
+  {% endif %}
+</nav>
+<div class="container">
+  {% for cat, msg in get_flashed_messages(with_categories=True) %}
+    <div class="alert alert-{{ cat }}">{{ msg }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</div>
+</body>
+</html>

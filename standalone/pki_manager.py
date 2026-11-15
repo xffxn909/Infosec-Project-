@@ -28,7 +28,8 @@ from cryptography.x509 import CertificateRevocationList
 import argon2
 from argon2 import PasswordHasher
 
-PKI_DIR = Path("pki")
+BASE_DIR = Path(__file__).resolve().parent
+PKI_DIR = BASE_DIR / "pki"
 PKI_DIR.mkdir(exist_ok=True)
 
 # ─────────────────────────────────────────────────────────────────────────────

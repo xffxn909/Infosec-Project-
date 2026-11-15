@@ -8,6 +8,7 @@ Module 1 – Availability Controls
 """
 
 import os
+import sys
 import time
 import shutil
 import zipfile
@@ -15,13 +16,17 @@ import datetime
 import subprocess
 from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
 from database import audit
 
-BACKUP_DIR = Path("backups")
+BACKUP_DIR = BASE_DIR / "backups"
 BACKUP_DIR.mkdir(exist_ok=True)
 
-DB_PATH = Path("secure_doc.db")
-UPLOAD_DIR = Path("uploads")
+DB_PATH = BASE_DIR / "secure_doc.db"
+UPLOAD_DIR = BASE_DIR / "uploads"
 
 
 # ─────────────────────────────────────────────────────────────────────────────

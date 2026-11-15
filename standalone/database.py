@@ -9,7 +9,8 @@ import sqlite3
 import datetime
 from pathlib import Path
 
-DB_PATH = Path("secure_doc.db")
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "secure_doc.db"
 
 
 def get_conn():
