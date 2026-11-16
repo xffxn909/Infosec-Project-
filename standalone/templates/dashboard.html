@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<div class="grid2">
+  <div class="card">
+    <h2>Total Documents</h2>
+    <p style="font-size:2rem;font-weight:700">{{ total }}</p>
+  </div>
+  <div class="card">
+    <h2>Digitally Signed</h2>
+    <p style="font-size:2rem;font-weight:700;color:#2d7a4f">{{ signed }}</p>
+  </div>
+  <div class="card">
+    <h2>Tampered / Alert</h2>
+    <p style="font-size:2rem;font-weight:700;color:{% if tampered %}#b91c1c{% else %}#2d7a4f{% endif %}">{{ tampered }}</p>
+  </div>
+  <div class="card">
+    <h2>Your Role</h2>
+    <p style="font-size:1.5rem;font-weight:700">
+      <span class="badge badge-blue">{{ user.role | upper }}</span>
+    </p>
+  </div>
+</div>
+<div class="card">
+  <h2>Recent Documents</h2>
+  <table>
+    <tr><th>Filename</th><th>Uploaded by</th><th>Signed by</th><th>Date</th><th>Action</th></tr>
+    {% for d in docs[:10] %}
+    <tr>
+      <td>{{ d.filename }}</td>
+      <td>{{ d.uploader }}</td>
+      <td>{{ d.signed_by or '—' }}</td>
+      <td>{{ d.created_at }}</td>
+      <td><a href="{{ url_for('verify_doc', stored_name=d.stored_name) }}" class="btn btn-sm btn-primary">Verify</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+  <a href="{{ url_for('documents_page') }}" class="btn btn-primary" style="margin-top:12px">All Documents →</a>
+</div>
+{% endblock %}

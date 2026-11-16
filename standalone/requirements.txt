@@ -1,0 +1,5 @@
+﻿# requirements.txt – Standalone Secure Document Management and E-Signature System
+flask>=3.0
+cryptography>=42.0
+argon2-cffi>=23.1
+pyotp>=2.9

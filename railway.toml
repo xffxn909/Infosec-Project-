@@ -1,0 +1,15 @@
+# ============================================================
+# Secure Document Management & E-Signature System
+# Railway Deployment Configuration
+# ============================================================
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 run:app"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

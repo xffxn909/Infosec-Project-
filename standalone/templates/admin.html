@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Admin Panel</h1>
+<div class="grid2">
+  <div class="card">
+    <h2>Create User</h2>
+    <form method="post">
+      <input type="hidden" name="action" value="create_user">
+      <label>Username</label><input name="username" required>
+      <label>Password</label><input type="password" name="password" required>
+      <label>Role</label>
+      <select name="role">
+        <option value="staff">Staff</option>
+        <option value="manager">Manager</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button class="btn btn-success" style="margin-top:12px">Create User</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Revoke Certificate</h2>
+    <form method="post">
+      <input type="hidden" name="action" value="revoke_cert">
+      <label>Username to Revoke</label><input name="target_user" required>
+      <button class="btn btn-danger" style="margin-top:12px">Revoke &amp; Update CRL</button>
+    </form>
+    <hr style="margin:16px 0">
+    <h2>Security Demo</h2>
+    <form method="post">
+      <input type="hidden" name="action" value="hash_demo">
+      <button class="btn btn-warning">MD5 vs Argon2 Speed Test</button>
+    </form>
+  </div>
+</div>
+<div class="card">
+  <h2>System Users</h2>
+  <table>
+    <tr><th>Username</th><th>Role</th><th>Created</th><th>Active</th></tr>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.username }}</td>
+      <td><span class="badge badge-blue">{{ u.role }}</span></td>
+      <td>{{ u.created_at }}</td>
+      <td>{% if u.active %}<span class="badge badge-green">Yes</span>{% else %}<span class="badge badge-red">No</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

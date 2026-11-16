@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Risk Assessment (NIST SP 800-30)</h1>
+
+<div class="card">
+  <h2>Asset Register</h2>
+  <table>
+    <tr><th>ID</th><th>Asset</th><th>Type</th><th>Value</th></tr>
+    {% for a in assets %}
+    <tr>
+      <td>{{ a.id }}</td>
+      <td>{{ a.name }}</td>
+      <td>{{ a.type }}</td>
+      <td>
+        {% if a.value == 'Critical' %}<span class="badge badge-red">Critical</span>
+        {% elif a.value == 'High' %}<span class="badge badge-yellow">High</span>
+        {% else %}<span class="badge badge-blue">{{ a.value }}</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Risk Register</h2>
+  <table>
+    <tr><th>ID</th><th>Threat</th><th>Score Before</th><th>Rating</th><th>Score After</th><th>Rating</th><th>Control</th></tr>
+    {% for r in risks %}
+    <tr>
+      <td>{{ r.id }}</td>
+      <td>{{ r.threat_id }}</td>
+      <td><b>{{ r.score_before }}</b></td>
+      <td>
+        {% if r.rating_before == 'CRITICAL' %}<span class="badge badge-red">CRITICAL</span>
+        {% elif r.rating_before == 'HIGH' %}<span class="badge badge-yellow">HIGH</span>
+        {% elif r.rating_before == 'MEDIUM' %}<span class="badge badge-blue">MEDIUM</span>
+        {% else %}<span class="badge badge-green">LOW</span>{% endif %}
+      </td>
+      <td><b>{{ r.score_after }}</b></td>
+      <td>
+        {% if r.rating_after == 'CRITICAL' %}<span class="badge badge-red">CRITICAL</span>
+        {% elif r.rating_after == 'HIGH' %}<span class="badge badge-yellow">HIGH</span>
+        {% elif r.rating_after == 'MEDIUM' %}<span class="badge badge-blue">MEDIUM</span>
+        {% else %}<span class="badge badge-green">LOW</span>{% endif %}
+      </td>
+      <td style="font-size:.8rem">{{ r.control }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Policies</h2>
+  <pre>{{ key_policy }}</pre>
+  <pre>{{ backup_policy }}</pre>
+</div>
+
+<div class="card">
+  <h2>Generate Full Text Report</h2>
+  <a href="{{ url_for('risk_report_download') }}" class="btn btn-primary">📄 Download Full NIST Report</a>
+</div>
+{% endblock %}
